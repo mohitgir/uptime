@@ -5,7 +5,8 @@ Self-hosted uptime monitor for all Kansal Tech client sites. Own Supabase projec
 ## Files
 - `Uptime.dc.html` — staff dashboard. Login = Supabase Auth email+password, then 6-digit emailed code (1-day device memory in localStorage `uptime-otp-<uid>`). Demo data shows while `uptime-client.js` is unconfigured.
 - `Status.dc.html?p=<slug>` — public status page (reads `public_status(slug)` RPC; anon has no table access).
-- `uptime-client.js` — SUPABASE_URL / ANON_KEY / FUNCTION_URL + `demoData()`.
+- `uptime-client.js` — re-exports SUPABASE_URL / ANON_KEY from `env.js`, FUNCTION_URL + `demoData()`.
+- `env.js` — generated on Netlify by `build-env.mjs` (build command) from env vars `SUPABASE_URL`, `SUPABASE_ANON_KEY` (also accepts VITE_/NEXT_PUBLIC_ prefixes). Committed copy is empty = demo mode. Resend key never goes here.
 - `netlify.toml` — `/` → dashboard, `/status/:slug` → status page.
 - `deploy/schema.sql` — tables (projects, monitors, checks, incidents, alert_channels, alert_log, settings), RLS (authenticated full access), RPCs `uptime_summary(days)`, `recent_checks(limit)`, `public_status(slug)`, `prune_checks()`, pg_cron `uptime-run-checks` (every minute → edge fn with `x-cron-secret`) and `uptime-prune` (4:15 daily). Seeds 8 projects + homepage monitors + Prestige extras.
 - `deploy/edge-function-run-checks.ts` — edge fn `run-checks`: runs due monitors (HTTP status/keyword/timeout or heartbeat lateness), fail-threshold → incident + alerts (email via Resend, Slack webhook, WhatsApp Cloud API template `uptime_alert`), escalation channels, recovery alerts, `?hb=<token>` heartbeat receiver, `{action:'test_channel'}`.

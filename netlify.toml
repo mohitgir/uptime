@@ -1,5 +1,10 @@
 [build]
   publish = "."
+  command = "node build-env.mjs"
+
+[build.environment]
+  # Supabase URL + anon key are public by design (they ship to the browser); only RESEND_API_KEY stays scanned.
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL,SUPABASE_ANON_KEY"
 
 [[redirects]]
   from = "/"

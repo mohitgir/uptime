@@ -1,6 +1,7 @@
-// Kansal Tech Uptime — Supabase bridge. Fill in after creating the NEW Supabase project (Settings → API).
-export const SUPABASE_URL = '';
-export const SUPABASE_ANON_KEY = '';
+// Kansal Tech Uptime — Supabase bridge. Keys come from env.js, which Netlify generates at deploy from
+// the site's env vars (SUPABASE_URL, SUPABASE_ANON_KEY) via build-env.mjs.
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './env.js';
+export { SUPABASE_URL, SUPABASE_ANON_KEY };
 export const FUNCTION_URL = SUPABASE_URL ? SUPABASE_URL + '/functions/v1/run-checks' : '';
 
 let _c = null;

@@ -13,7 +13,7 @@ A self-hosted uptime monitor for all Kansal Tech client sites. Checks run from a
 ## Steps
 1. **Supabase → New project** (name it `kansal-uptime`, a North America region). Free plan works because the cron keeps it active; Pro ($25) if you want guarantees.
 2. **SQL editor** → paste `deploy/schema.sql`. Before running, replace `<PROJECT_REF>` (from the project URL) and `<CRON_SECRET>` (any long random string — keep it for step 4). Run.
-3. **Settings → API** → copy Project URL and anon key into `uptime-client.js`.
+3. **Settings → API** → copy Project URL and anon key. Put them in Netlify: Site configuration → Environment variables → `SUPABASE_URL` and `SUPABASE_ANON_KEY`. The build (`node build-env.mjs`) writes them into `env.js` on every deploy. (For local testing, fill `env.js` by hand.) `RESEND_API_KEY` is a secret — it stays in Supabase edge-function secrets (step 4), never in Netlify/browser.
 4. **Edge function** (terminal, Supabase CLI installed):
    ```
    supabase link --project-ref <PROJECT_REF>
