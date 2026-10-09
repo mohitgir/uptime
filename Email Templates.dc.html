@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <title>Kansal Tech · Email templates</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; background: #0f1115; color: #e8eaf0; font-family: 'Space Grotesk', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #7aa7ff; text-decoration: none; } a:hover { color: #a9c4ff; }
+  </style>
+</helmet>
+<div style="padding: 32px 16px 56px; display: flex; flex-direction: column; gap: 40px; align-items: center;">
+  <div style="width: 100%; max-width: 980px; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;">
+    <h1 style="margin: 0; font-size: 20px; font-weight: 600;">Email templates</h1>
+    <span style="font-size: 13px; color: #8b93a5;">Kansal Tech Uptime · as they render in a mail client</span>
+  </div>
+  <div style="width: 100%; max-width: 980px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 32px; align-items: start;">
+
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #8b93a5;">1 · Sign-in code <span style="color: #5d6575;">— Supabase Magic Link template</span></div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: #171a21; border: 1px solid #262b36; border-radius: 14px;">
+        <tr><td style="padding: 28px 32px 0;">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+            <td style="width: 32px; height: 32px; background: #4f8cff; border-radius: 8px; text-align: center; font-weight: 700; font-size: 15px; color: #0f1115; line-height: 32px;">K</td>
+            <td style="padding-left: 10px; font-size: 15px; font-weight: 600;">Kansal Tech <span style="color: #8b93a5; font-weight: 500;">/ Uptime</span></td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="padding: 28px 32px 0; font-size: 22px; font-weight: 600; line-height: 1.3;">Your sign-in code</td></tr>
+        <tr><td style="padding: 8px 32px 0; font-size: 14px; line-height: 1.6; color: #8b93a5;">Enter this code in the dashboard to finish signing in on this device.</td></tr>
+        <tr><td style="padding: 22px 32px 0;"><div style="background: #0f1115; border: 1px solid #2d3340; border-radius: 10px; padding: 18px; text-align: center; font-family: 'JetBrains Mono', Menlo, monospace; font-size: 34px; letter-spacing: .35em; color: #e8eaf0;">482913</div></td></tr>
+        <tr><td style="padding: 14px 32px 0; font-size: 12.5px; line-height: 1.6; color: #5d6575;">The code expires in 1 hour and works once. If you didn't try to sign in, you can ignore this email — nothing changes without the code.</td></tr>
+        <tr><td style="padding: 28px 32px 24px; border-top: 1px solid #262b36; font-size: 11px; color: #5d6575; line-height: 1.6;"><span style="color: #8b93a5;">Kansal Tech Uptime</span> · <a href="#">https://uptime.kansaltech.ca</a><br>Sent to you@kansaltech.ca</td></tr>
+      </table>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #8b93a5;">2 · Down alert <span style="color: #5d6575;">— sent by the checker via Resend</span></div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: #171a21; border: 1px solid #262b36; border-radius: 14px;">
+        <tr><td style="padding: 28px 32px 0;">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+            <td style="width: 32px; height: 32px; background: #4f8cff; border-radius: 8px; text-align: center; font-weight: 700; font-size: 15px; color: #0f1115; line-height: 32px;">K</td>
+            <td style="padding-left: 10px; font-size: 15px; font-weight: 600;">Kansal Tech <span style="color: #8b93a5; font-weight: 500;">/ Uptime</span></td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="padding: 26px 32px 0;"><span style="display: inline-block; background: #2a1414; color: #ff5c5c; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; padding: 5px 10px; border-radius: 999px;">● &nbsp;Down</span></td></tr>
+        <tr><td style="padding: 14px 32px 0; font-size: 22px; font-weight: 600; line-height: 1.3;">DOWN: Riar Residential — Homepage</td></tr>
+        <tr><td style="padding: 18px 32px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="padding: 9px 0; border-top: 1px solid #262b36; width: 120px;"></td><td style="padding: 9px 0; border-top: 1px solid #262b36; font-size: 13.5px; font-family: 'JetBrains Mono', Menlo, monospace;">Homepage is not responding.</td></tr>
+            <tr><td style="padding: 9px 0; border-top: 1px solid #262b36; font-size: 11px; color: #5d6575; letter-spacing: .1em; text-transform: uppercase; vertical-align: top;">Cause</td><td style="padding: 9px 0; border-top: 1px solid #262b36; font-size: 13.5px; font-family: 'JetBrains Mono', Menlo, monospace;">HTTP 522</td></tr>
+            <tr><td style="padding: 9px 0; border-top: 1px solid #262b36; font-size: 11px; color: #5d6575; letter-spacing: .1em; text-transform: uppercase; vertical-align: top;">URL</td><td style="padding: 9px 0; border-top: 1px solid #262b36; font-size: 13.5px; font-family: 'JetBrains Mono', Menlo, monospace; word-break: break-all;">https://riarresidential.com</td></tr>
+            <tr><td style="padding: 9px 0; border-top: 1px solid #262b36; font-size: 11px; color: #5d6575; letter-spacing: .1em; text-transform: uppercase; vertical-align: top;">Checked</td><td style="padding: 9px 0; border-top: 1px solid #262b36; font-size: 13.5px; font-family: 'JetBrains Mono', Menlo, monospace;">3 failures in a row, every 5 min</td></tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding: 24px 32px 0;"><a href="#" style="display: inline-block; background: #4f8cff; color: #0f1115; font-weight: 600; padding: 11px 18px; border-radius: 8px; font-size: 13.5px;">Open dashboard</a></td></tr>
+        <tr><td style="padding: 28px 32px 24px; font-size: 11px; color: #5d6575; line-height: 1.6;"><span style="color: #8b93a5;">Kansal Tech Uptime</span> · Thu, 09 Oct 2026 14:21:07 GMT<br>Alerts repeat only after the monitor recovers and fails again.</td></tr>
+      </table>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #8b93a5;">3 · Recovery <span style="color: #5d6575;">— same template, green state</span></div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: #171a21; border: 1px solid #262b36; border-radius: 14px;">
+        <tr><td style="padding: 28px 32px 0;">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+            <td style="width: 32px; height: 32px; background: #4f8cff; border-radius: 8px; text-align: center; font-weight: 700; font-size: 15px; color: #0f1115; line-height: 32px;">K</td>
+            <td style="padding-left: 10px; font-size: 15px; font-weight: 600;">Kansal Tech <span style="color: #8b93a5; font-weight: 500;">/ Uptime</span></td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="padding: 26px 32px 0;"><span style="display: inline-block; background: #10281f; color: #3ddc97; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; padding: 5px 10px; border-radius: 999px;">● &nbsp;Recovered</span></td></tr>
+        <tr><td style="padding: 14px 32px 0; font-size: 22px; font-weight: 600; line-height: 1.3;">RECOVERED: Riar Residential — Homepage</td></tr>
+        <tr><td style="padding: 18px 32px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="padding: 9px 0; border-top: 1px solid #262b36; width: 120px;"></td><td style="padding: 9px 0; border-top: 1px solid #262b36; font-size: 13.5px; font-family: 'JetBrains Mono', Menlo, monospace;">Homepage is back up.</td></tr>
+            <tr><td style="padding: 9px 0; border-top: 1px solid #262b36; font-size: 11px; color: #5d6575; letter-spacing: .1em; text-transform: uppercase; vertical-align: top;">Downtime</td><td style="padding: 9px 0; border-top: 1px solid #262b36; font-size: 13.5px; font-family: 'JetBrains Mono', Menlo, monospace;">26 min</td></tr>
+            <tr><td style="padding: 9px 0; border-top: 1px solid #262b36; font-size: 11px; color: #5d6575; letter-spacing: .1em; text-transform: uppercase; vertical-align: top;">URL</td><td style="padding: 9px 0; border-top: 1px solid #262b36; font-size: 13.5px; font-family: 'JetBrains Mono', Menlo, monospace; word-break: break-all;">https://riarresidential.com</td></tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding: 24px 32px 0;"><a href="#" style="display: inline-block; background: #4f8cff; color: #0f1115; font-weight: 600; padding: 11px 18px; border-radius: 8px; font-size: 13.5px;">Open dashboard</a></td></tr>
+        <tr><td style="padding: 28px 32px 24px; font-size: 11px; color: #5d6575; line-height: 1.6;"><span style="color: #8b93a5;">Kansal Tech Uptime</span> · Thu, 09 Oct 2026 14:47:12 GMT<br>Recovery notice</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

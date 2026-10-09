@@ -158,13 +158,21 @@ async function send(ch: any, msg: Msg): Promise<{ ok: boolean; error?: string }>
       if (r.ok) return { ok: true };
       return { ok: false, error: `WhatsApp ${r.status}: ${(await r.text()).slice(0, 200)}` };
     }
-    // email (Resend)
-    const color = msg.up ? "#1f9d6b" : "#c43d3d";
-    const html = `<div style="font-family:Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;border:1px solid #e3e6ea;border-radius:10px;overflow:hidden">
-      <div style="background:${color};color:#fff;padding:18px 22px;font-size:17px;font-weight:600">${plain}</div>
-      <div style="padding:20px 22px;color:#2b3036;font-size:14px;line-height:1.6">${msg.lines.filter(Boolean).map((l) => `<div>${l}</div>`).join("")}
-        <div style="margin-top:18px"><a href="${env("DASHBOARD_URL")}" style="background:#24282c;color:#fff;text-decoration:none;padding:10px 16px;border-radius:6px;font-size:13px">Open dashboard</a></div></div>
-      <div style="padding:12px 22px;color:#8b93a5;font-size:11px;border-top:1px solid #eef0f3">Kansal Tech Uptime · ${new Date().toUTCString()}</div></div>`;
+    // email (Resend) — Kansal Tech dark theme, table-based for mail clients
+    const color = msg.up ? "#3ddc97" : "#ff5c5c", tint = msg.up ? "#10281f" : "#2a1414", state = msg.up ? "Recovered" : "Down";
+    const rows = msg.lines.filter(Boolean).map((l) => { const i = l.indexOf(":"); const k = i > 0 && i < 24 ? l.slice(0, i) : "", v = i > 0 && i < 24 ? l.slice(i + 1).trim() : l;
+      return `<tr><td style="padding:9px 0;border-top:1px solid #262b36;font-size:11px;color:#5d6575;letter-spacing:.1em;text-transform:uppercase;width:120px;vertical-align:top;">${k}</td><td style="padding:9px 0;border-top:1px solid #262b36;font-size:13.5px;color:#e8eaf0;font-family:'JetBrains Mono',Menlo,Consolas,'Courier New',monospace;word-break:break-all;">${v}</td></tr>`; }).join("");
+    const html = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0f1115;margin:0;padding:0;"><tr><td align="center" style="padding:40px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#171a21;border:1px solid #262b36;border-radius:14px;font-family:'Space Grotesk',Helvetica,Arial,sans-serif;color:#e8eaf0;">
+        <tr><td style="padding:28px 32px 0;"><table role="presentation" cellpadding="0" cellspacing="0"><tr>
+          <td style="width:32px;height:32px;background:#4f8cff;border-radius:8px;text-align:center;font-weight:700;font-size:15px;color:#0f1115;line-height:32px;">K</td>
+          <td style="padding-left:10px;font-size:15px;font-weight:600;">Kansal Tech <span style="color:#8b93a5;font-weight:500;">/ Uptime</span></td></tr></table></td></tr>
+        <tr><td style="padding:26px 32px 0;"><span style="display:inline-block;background:${tint};color:${color};font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;border-radius:999px;">&#9679;&nbsp; ${state}</span></td></tr>
+        <tr><td style="padding:14px 32px 0;font-size:22px;font-weight:600;line-height:1.3;">${plain}</td></tr>
+        <tr><td style="padding:18px 32px 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table></td></tr>
+        <tr><td style="padding:24px 32px 0;"><a href="${env("DASHBOARD_URL")}" style="display:inline-block;background:#4f8cff;color:#0f1115;text-decoration:none;font-weight:600;padding:11px 18px;border-radius:8px;font-size:13.5px;">Open dashboard</a></td></tr>
+        <tr><td style="padding:28px 32px 24px;font-size:11px;color:#5d6575;line-height:1.6;"><span style="color:#8b93a5;">Kansal Tech Uptime</span> · ${new Date().toUTCString()}<br>${msg.up ? "Recovery notice" : "Alerts repeat only after the monitor recovers and fails again."}</td></tr>
+      </table></td></tr></table>`;
     const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${env("RESEND_API_KEY")}`, "Content-Type": "application/json" },
       body: JSON.stringify({ from: env("ALERT_FROM", "Kansal Tech Uptime <uptime@kansaltech.ca>"), to: ch.target.split(",").map((s: string) => s.trim()), subject: plain, html }) });
     if (r.ok) return { ok: true };
