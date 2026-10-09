@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <title>Kansal Tech · Uptime</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; background: #0f1115; color: #e8eaf0; font-family: 'Space Grotesk', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #7aa7ff; text-decoration: none; } a:hover { color: #a9c4ff; text-decoration: underline; }
+    input, select, textarea, button { font-family: inherit; }
+    input::placeholder { color: #5d6575; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</helmet>
+
+<sc-if value="{{ showLogin }}" hint-placeholder-val="{{ false }}">
+  <div style="min-height: 100vh; display: grid; place-items: center; padding: 24px; background: radial-gradient(900px 500px at 50% -10%, #182033 0%, #0f1115 60%);">
+    <div style="width: 100%; max-width: 380px; background: #171a21; border: 1px solid #262b36; border-radius: 14px; padding: 32px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 26px;">
+        <div style="width: 32px; height: 32px; border-radius: 8px; background: #4f8cff; display: grid; place-items: center; font-weight: 700; color: #0f1115; font-size: 15px;">K</div>
+        <div><div style="font-weight: 600; font-size: 15px; letter-spacing: .01em;">Kansal Tech</div><div style="font-size: 11px; color: #8b93a5; letter-spacing: .14em; text-transform: uppercase;">Uptime</div></div>
+      </div>
+      <sc-if value="{{ needsOtp }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size: 20px; font-weight: 600; margin-bottom: 6px;">Check your email</div>
+        <div style="font-size: 13.5px; color: #8b93a5; line-height: 1.5; margin-bottom: 20px;">We sent a 6-digit code to <span style="color: #e8eaf0;">{{ otpEmail }}</span>.</div>
+        <input id="up-otp" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength="8" placeholder="000000" onKeyDown="{{ otpKey }}" style="width: 100%; box-sizing: border-box; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 26px; letter-spacing: .4em; padding: 14px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; outline: none; margin-bottom: 12px;">
+        <button onClick="{{ verifyOtp }}" style="all: unset; box-sizing: border-box; cursor: pointer; width: 100%; text-align: center; background: #4f8cff; color: #0f1115; font-weight: 600; padding: 13px; border-radius: 8px; font-size: 14px;">{{ otpBtnLabel }}</button>
+        <div style="min-height: 20px; margin-top: 10px; font-size: 12.5px; color: #ff5c5c;">{{ otpError }}</div>
+        <div style="display: flex; justify-content: space-between; font-size: 12.5px;"><a href="#" onClick="{{ resendOtp }}">{{ resendLabel }}</a><a href="#" onClick="{{ cancelOtp }}" style="color: #8b93a5;">Use a different account</a></div>
+      </sc-if>
+      <sc-if value="{{ notOtp }}" hint-placeholder-val="{{ true }}">
+        <div style="font-size: 20px; font-weight: 600; margin-bottom: 18px;">Sign in</div>
+        <div style="display: grid; gap: 12px;">
+          <input id="up-email" type="email" placeholder="you@kansaltech.ca" autoComplete="username" onKeyDown="{{ loginKey }}" style="width: 100%; box-sizing: border-box; padding: 12px 14px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 14px; outline: none;">
+          <input id="up-pass" type="password" placeholder="Password" autoComplete="current-password" onKeyDown="{{ loginKey }}" style="width: 100%; box-sizing: border-box; padding: 12px 14px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 14px; outline: none;">
+          <button onClick="{{ login }}" style="all: unset; box-sizing: border-box; cursor: pointer; width: 100%; text-align: center; background: #4f8cff; color: #0f1115; font-weight: 600; padding: 13px; border-radius: 8px; font-size: 14px;">{{ loginBtnLabel }}</button>
+          <div style="min-height: 18px; font-size: 12.5px; color: #ff5c5c;">{{ loginError }}</div>
+        </div>
+        <div style="font-size: 12px; color: #5d6575; line-height: 1.5;">Accounts are created in Supabase → Authentication. A one-time email code is required on each new device.</div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ showApp }}" hint-placeholder-val="{{ true }}">
+<div style="min-height: 100vh; display: flex; flex-direction: column;">
+  <sc-if value="{{ demo }}" hint-placeholder-val="{{ false }}">
+    <div style="background: #2a2410; color: #ffb648; font-size: 12.5px; padding: 8px 20px; text-align: center; border-bottom: 1px solid #3d3415;">Demo data — connect the Supabase project in <span style="font-family: 'JetBrains Mono', monospace;">uptime-client.js</span> to go live.</div>
+  </sc-if>
+  <header style="display: flex; align-items: center; gap: 18px; padding: 14px 24px; border-bottom: 1px solid #1f242e; background: #12151b; position: sticky; top: 0; z-index: 5; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 10px; margin-right: 8px;">
+      <div style="width: 28px; height: 28px; border-radius: 7px; background: #4f8cff; display: grid; place-items: center; font-weight: 700; color: #0f1115; font-size: 13px;">K</div>
+      <div style="font-weight: 600; font-size: 14.5px;">Kansal Tech <span style="color: #8b93a5; font-weight: 500;">/ Uptime</span></div>
+    </div>
+    <nav style="display: flex; gap: 4px; flex-basis: 100%; order: 2; flex-wrap: wrap; white-space: nowrap;">
+      <button onClick="{{ viewAll }}" style="all: unset; cursor: pointer; padding: 6px 12px; border-radius: 999px; font-size: 13px; background: {{ allTabBg }}; color: {{ allTabColor }};">All projects</button>
+      <sc-for list="{{ projectTabs }}" as="p" hint-placeholder-count="4">
+        <button onClick="{{ p.select }}" style="all: unset; cursor: pointer; padding: 6px 12px; border-radius: 999px; font-size: 13px; display: inline-flex; align-items: center; gap: 7px; background: {{ p.bg }}; color: {{ p.color }};"><span style="width: 7px; height: 7px; border-radius: 50%; background: {{ p.dot }};"></span>{{ p.name }}</button>
+      </sc-for>
+    </nav>
+    <div style="display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; white-space: nowrap;">
+      <div style="font-size: 12px; color: #5d6575; font-family: 'JetBrains Mono', monospace;">{{ refreshedLabel }}</div>
+      <button onClick="{{ runNow }}" title="Run every check now" style="all: unset; cursor: pointer; padding: 7px 12px; border-radius: 7px; font-size: 12.5px; border: 1px solid #2d3340; color: #c9cfdb; display: inline-flex; align-items: center; gap: 7px;" style-hover="border-color: #4f8cff; color: #fff;"><span style="display: inline-block; width: 10px; height: 10px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: {{ spinAnim }};"></span>{{ runLabel }}</button>
+      <button onClick="{{ openChannels }}" style="all: unset; cursor: pointer; padding: 7px 12px; border-radius: 7px; font-size: 12.5px; border: 1px solid #2d3340; color: #c9cfdb;" style-hover="border-color: #4f8cff; color: #fff;">Alerts</button>
+      <button onClick="{{ openProjectNew }}" style="all: unset; cursor: pointer; padding: 7px 12px; border-radius: 7px; font-size: 12.5px; border: 1px solid #2d3340; color: #c9cfdb;" style-hover="border-color: #4f8cff; color: #fff;">+ Project</button>
+      <button onClick="{{ openMonitorNew }}" style="all: unset; cursor: pointer; padding: 7px 12px; border-radius: 7px; font-size: 12.5px; background: #4f8cff; color: #0f1115; font-weight: 600;">+ Monitor</button>
+      <button onClick="{{ logout }}" title="{{ userEmail }}" style="all: unset; cursor: pointer; padding: 7px 10px; border-radius: 7px; font-size: 12.5px; color: #8b93a5;" style-hover="color: #fff;">Sign out</button>
+    </div>
+  </header>
+
+  <main style="flex: 1; padding: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 560px), 1fr)); gap: 24px; max-width: 1500px; width: 100%; box-sizing: border-box; margin: 0 auto;">
+    <div style="display: flex; flex-direction: column; gap: 22px; min-width: 0;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+        <div style="background: #171a21; border: 1px solid #262b36; border-radius: 12px; padding: 16px 18px;"><div style="font-size: 11px; color: #8b93a5; letter-spacing: .12em; text-transform: uppercase;">Operational</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 28px; margin-top: 6px; color: #3ddc97;">{{ statUp }}</div></div>
+        <div style="background: #171a21; border: 1px solid #262b36; border-radius: 12px; padding: 16px 18px;"><div style="font-size: 11px; color: #8b93a5; letter-spacing: .12em; text-transform: uppercase;">Down</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 28px; margin-top: 6px; color: {{ statDownColor }};">{{ statDown }}</div></div>
+        <div style="background: #171a21; border: 1px solid #262b36; border-radius: 12px; padding: 16px 18px;"><div style="font-size: 11px; color: #8b93a5; letter-spacing: .12em; text-transform: uppercase;">Uptime · 30 days</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 28px; margin-top: 6px;">{{ statUptime }}</div></div>
+        <div style="background: #171a21; border: 1px solid #262b36; border-radius: 12px; padding: 16px 18px;"><div style="font-size: 11px; color: #8b93a5; letter-spacing: .12em; text-transform: uppercase;">Avg response</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 28px; margin-top: 6px;">{{ statLatency }}</div></div>
+      </div>
+
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+        <section style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <span style="width: 9px; height: 9px; border-radius: 50%; background: {{ g.dot }}; box-shadow: 0 0 0 4px {{ g.halo }};"></span>
+            <h2 style="margin: 0; font-size: 17px; font-weight: 600; white-space: nowrap;">{{ g.name }}</h2>
+            <a href="{{ g.website }}" target="_blank" style="font-size: 12.5px; color: #8b93a5; font-family: 'JetBrains Mono', monospace; white-space: nowrap;">{{ g.host }}</a>
+            <span style="flex: 1;"></span>
+            <a href="{{ g.statusHref }}" target="_blank" style="font-size: 12px; color: #7aa7ff; white-space: nowrap;">Status page ↗</a>
+            <button onClick="{{ g.edit }}" style="all: unset; cursor: pointer; font-size: 12px; color: #8b93a5; white-space: nowrap;" style-hover="color: #fff;">Edit project</button>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px;">
+            <sc-for list="{{ g.monitors }}" as="m" hint-placeholder-count="2">
+              <article onClick="{{ m.edit }}" style="background: #171a21; border: 1px solid {{ m.border }}; border-radius: 12px; padding: 16px; cursor: pointer; display: flex; flex-direction: column; gap: 12px; transition: border-color .15s;" style-hover="border-color: #3a4252;">
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <div style="min-width: 0; flex: 1;">
+                    <div style="font-weight: 600; font-size: 14.5px; display: flex; align-items: center; gap: 8px;">{{ m.name }}<span style="font-size: 10.5px; color: #8b93a5; border: 1px solid #2d3340; border-radius: 4px; padding: 1px 5px; letter-spacing: .06em; text-transform: uppercase;">{{ m.kindLabel }}</span></div>
+                    <div style="font-size: 12px; color: #8b93a5; font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px;">{{ m.target }}</div>
+                  </div>
+                  <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: {{ m.pillColor }}; background: {{ m.pillBg }}; padding: 4px 9px; border-radius: 999px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: {{ m.pulse }};"></span>{{ m.statusLabel }}</span>
+                </div>
+                <div style="display: flex; align-items: flex-end; gap: 2px; height: 34px;">
+                  <sc-for list="{{ m.spark }}" as="b" hint-placeholder-count="48">
+                    <span title="{{ b.title }}" style="flex: 1; min-width: 0; border-radius: 1.5px; height: {{ b.h }}%; background: {{ b.c }};"></span>
+                  </sc-for>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px;">
+                  <div><div style="font-size: 10px; color: #5d6575; font-family: 'Space Grotesk', sans-serif; letter-spacing: .1em; text-transform: uppercase;">Response</div><div style="margin-top: 2px;">{{ m.latency }}</div></div>
+                  <div><div style="font-size: 10px; color: #5d6575; font-family: 'Space Grotesk', sans-serif; letter-spacing: .1em; text-transform: uppercase;">30d uptime</div><div style="margin-top: 2px; color: {{ m.uptimeColor }};">{{ m.uptime }}</div></div>
+                  <div><div style="font-size: 10px; color: #5d6575; font-family: 'Space Grotesk', sans-serif; letter-spacing: .1em; text-transform: uppercase;">Checked</div><div style="margin-top: 2px;">{{ m.checked }}</div></div>
+                </div>
+                <sc-if value="{{ m.hasError }}" hint-placeholder-val="{{ false }}"><div style="font-size: 12.5px; color: #ff8a8a; background: #2a1414; border-radius: 6px; padding: 6px 10px;">{{ m.error }}</div></sc-if>
+              </article>
+            </sc-for>
+          </div>
+        </section>
+      </sc-for>
+      <sc-if value="{{ noMonitors }}" hint-placeholder-val="{{ false }}"><div style="color: #8b93a5; font-size: 14px; padding: 40px; text-align: center; border: 1px dashed #2d3340; border-radius: 12px;">No monitors yet — add one with “+ Monitor”.</div></sc-if>
+    </div>
+
+    <aside style="display: flex; flex-direction: column; gap: 14px; max-width: 560px;">
+      <div style="background: #171a21; border: 1px solid #262b36; border-radius: 12px; padding: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;"><div style="font-weight: 600; font-size: 14px;">Incidents</div><div style="font-size: 11.5px; color: #8b93a5;">last 30 days</div></div>
+        <sc-if value="{{ noIncidents }}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; color: #5d6575; padding: 10px 0;">No incidents. Quiet is good.</div></sc-if>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <sc-for list="{{ incidentRows }}" as="i" hint-placeholder-count="3">
+            <div style="border: 1px solid {{ i.border }}; background: {{ i.bg }}; border-radius: 9px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 13px;"><span style="font-weight: 600;">{{ i.title }}</span><span style="font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: {{ i.color }};">{{ i.state }}</span></div>
+              <div style="font-size: 12px; color: #8b93a5;">{{ i.cause }}</div>
+              <div style="font-size: 11.5px; color: #5d6575; font-family: 'JetBrains Mono', monospace;">{{ i.when }} · {{ i.duration }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="background: #171a21; border: 1px solid #262b36; border-radius: 12px; padding: 16px; font-size: 12.5px; color: #8b93a5; line-height: 1.6;">
+        <div style="font-weight: 600; color: #e8eaf0; margin-bottom: 6px; font-size: 13.5px;">How checks work</div>
+        Every monitor is fetched on its own interval from the checker. A site is marked <span style="color: #ff5c5c;">down</span> only after the failure threshold is hit in a row, then alerts go to the project's channels plus global ones. Recovery sends a follow-up with the outage length.
+      </div>
+    </aside>
+  </main>
+
+  <sc-if value="{{ modalMonitor }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position: fixed; inset: 0; background: rgba(5,7,10,.7); z-index: 20; display: grid; place-items: center; padding: 20px;">
+      <div onClick="{{ stop }}" style="width: 100%; max-width: 560px; background: #171a21; border: 1px solid #2d3340; border-radius: 14px; padding: 24px; display: grid; gap: 14px; max-height: 92vh; overflow: auto; box-sizing: border-box;">
+        <div style="display: flex; justify-content: space-between; align-items: center;"><div style="font-size: 17px; font-weight: 600;">{{ monitorModalTitle }}</div><button onClick="{{ closeModal }}" style="all: unset; cursor: pointer; color: #8b93a5; font-size: 20px; line-height: 1;">×</button></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Project<select value="{{ f.project_id }}" onChange="{{ fProject }}" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px;"><sc-for list="{{ projectOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.id }}">{{ o.name }}</option></sc-for></select></label>
+          <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Type<select value="{{ f.kind }}" onChange="{{ fKind }}" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px;"><option value="http">Website / API (HTTP)</option><option value="heartbeat">Heartbeat (job pings us)</option></select></label>
+        </div>
+        <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Name<input value="{{ f.name }}" onChange="{{ fName }}" placeholder="Homepage" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px; outline: none;"></label>
+        <sc-if value="{{ fIsHttp }}" hint-placeholder-val="{{ true }}">
+          <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">URL<input value="{{ f.url }}" onChange="{{ fUrl }}" placeholder="https://example.com" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px; outline: none; font-family: 'JetBrains Mono', monospace;"></label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Expect status<input type="number" value="{{ f.expected_status }}" onChange="{{ fStatus }}" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px; outline: none;"></label>
+            <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Timeout (ms)<input type="number" value="{{ f.timeout_ms }}" onChange="{{ fTimeout }}" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px; outline: none;"></label>
+            <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Method<select value="{{ f.method }}" onChange="{{ fMethod }}" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px;"><option value="GET">GET</option><option value="HEAD">HEAD</option><option value="POST">POST</option></select></label>
+          </div>
+          <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Page must contain (optional)<input value="{{ f.keyword }}" onChange="{{ fKeyword }}" placeholder="e.g. Prestige Eyewear" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px; outline: none;"></label>
+          <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Headers JSON (optional)<input value="{{ f.headersText }}" onChange="{{ fHeaders }}" placeholder='{"apikey":"…"}' style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13px; outline: none; font-family: 'JetBrains Mono', monospace;"></label>
+        </sc-if>
+        <sc-if value="{{ fIsHeartbeat }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size: 12.5px; color: #8b93a5; line-height: 1.6; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; padding: 12px;">Have the job call this URL when it finishes. We alert if no ping arrives within the interval + grace.<div style="margin-top: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #c9cfdb; word-break: break-all;">{{ heartbeatUrl }}</div></div>
+          <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Grace (minutes)<input type="number" value="{{ f.grace_min }}" onChange="{{ fGrace }}" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px; outline: none;"></label>
+        </sc-if>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+          <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Interval<select value="{{ f.interval_min }}" onChange="{{ fInterval }}" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px;"><option value="1">Every minute</option><option value="5">Every 5 min</option><option value="15">Every 15 min</option><option value="60">Hourly</option><option value="1440">Daily</option></select></label>
+          <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Fails before alert<input type="number" min="1" value="{{ f.fail_threshold }}" onChange="{{ fThreshold }}" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px; outline: none;"></label>
+          <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Enabled<select value="{{ f.enabledStr }}" onChange="{{ fEnabled }}" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px;"><option value="true">Yes</option><option value="false">Paused</option></select></label>
+        </div>
+        <div style="min-height: 18px; font-size: 12.5px; color: #ff5c5c;">{{ formError }}</div>
+        <div style="display: flex; gap: 10px; justify-content: space-between; align-items: center;">
+          <sc-if value="{{ fIsEdit }}" hint-placeholder-val="{{ false }}"><button onClick="{{ deleteMonitor }}" style="all: unset; cursor: pointer; font-size: 12.5px; color: #ff8a8a;">Delete monitor</button></sc-if>
+          <sc-if value="{{ fIsNew }}" hint-placeholder-val="{{ true }}"><span></span></sc-if>
+          <div style="display: flex; gap: 10px;"><button onClick="{{ closeModal }}" style="all: unset; cursor: pointer; padding: 9px 14px; border-radius: 7px; font-size: 13px; border: 1px solid #2d3340; color: #c9cfdb;">Cancel</button><button onClick="{{ saveMonitor }}" style="all: unset; cursor: pointer; padding: 9px 16px; border-radius: 7px; font-size: 13px; background: #4f8cff; color: #0f1115; font-weight: 600;">{{ saveLabel }}</button></div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ modalProject }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position: fixed; inset: 0; background: rgba(5,7,10,.7); z-index: 20; display: grid; place-items: center; padding: 20px;">
+      <div onClick="{{ stop }}" style="width: 100%; max-width: 460px; background: #171a21; border: 1px solid #2d3340; border-radius: 14px; padding: 24px; display: grid; gap: 14px; box-sizing: border-box;">
+        <div style="display: flex; justify-content: space-between; align-items: center;"><div style="font-size: 17px; font-weight: 600;">{{ projectModalTitle }}</div><button onClick="{{ closeModal }}" style="all: unset; cursor: pointer; color: #8b93a5; font-size: 20px; line-height: 1;">×</button></div>
+        <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Name<input value="{{ pf.name }}" onChange="{{ pfName }}" placeholder="Client name" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px; outline: none;"></label>
+        <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Website<input value="{{ pf.website }}" onChange="{{ pfWebsite }}" placeholder="https://" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px; outline: none; font-family: 'JetBrains Mono', monospace;"></label>
+        <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Status page slug<input value="{{ pf.slug }}" onChange="{{ pfSlug }}" placeholder="client-name" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px; outline: none; font-family: 'JetBrains Mono', monospace;"></label>
+        <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Public status page<select value="{{ pf.publicStr }}" onChange="{{ pfPublic }}" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px;"><option value="true">Visible to anyone with the link</option><option value="false">Hidden</option></select></label>
+        <div style="min-height: 18px; font-size: 12.5px; color: #ff5c5c;">{{ formError }}</div>
+        <div style="display: flex; gap: 10px; justify-content: space-between; align-items: center;">
+          <sc-if value="{{ pfIsEdit }}" hint-placeholder-val="{{ false }}"><button onClick="{{ deleteProject }}" style="all: unset; cursor: pointer; font-size: 12.5px; color: #ff8a8a;">Delete project &amp; its monitors</button></sc-if>
+          <sc-if value="{{ pfIsNew }}" hint-placeholder-val="{{ true }}"><span></span></sc-if>
+          <div style="display: flex; gap: 10px;"><button onClick="{{ closeModal }}" style="all: unset; cursor: pointer; padding: 9px 14px; border-radius: 7px; font-size: 13px; border: 1px solid #2d3340; color: #c9cfdb;">Cancel</button><button onClick="{{ saveProject }}" style="all: unset; cursor: pointer; padding: 9px 16px; border-radius: 7px; font-size: 13px; background: #4f8cff; color: #0f1115; font-weight: 600;">{{ saveLabel }}</button></div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ modalChannels }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position: fixed; inset: 0; background: rgba(5,7,10,.7); z-index: 20; display: grid; place-items: center; padding: 20px;">
+      <div onClick="{{ stop }}" style="width: 100%; max-width: 640px; background: #171a21; border: 1px solid #2d3340; border-radius: 14px; padding: 24px; display: grid; gap: 16px; max-height: 92vh; overflow: auto; box-sizing: border-box;">
+        <div style="display: flex; justify-content: space-between; align-items: center;"><div style="font-size: 17px; font-weight: 600;">Alert channels</div><button onClick="{{ closeModal }}" style="all: unset; cursor: pointer; color: #8b93a5; font-size: 20px; line-height: 1;">×</button></div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <sc-for list="{{ channelRows }}" as="c" hint-placeholder-count="2">
+            <div style="display: grid; grid-template-columns: 90px 1fr auto; gap: 12px; align-items: center; background: #0f1115; border: 1px solid #2d3340; border-radius: 9px; padding: 10px 12px;">
+              <span style="font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #7aa7ff;">{{ c.type }}</span>
+              <div style="min-width: 0;"><div style="font-size: 13.5px; font-weight: 500;">{{ c.label }}</div><div style="font-size: 12px; color: #8b93a5; font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ c.target }}</div><div style="font-size: 11.5px; color: #5d6575; margin-top: 2px;">{{ c.scope }}</div></div>
+              <div style="display: flex; gap: 10px; font-size: 12px;"><button onClick="{{ c.test }}" style="all: unset; cursor: pointer; color: #c9cfdb;" style-hover="color: #fff;">Test</button><button onClick="{{ c.remove }}" style="all: unset; cursor: pointer; color: #ff8a8a;">Remove</button></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-top: 1px solid #262b36; padding-top: 16px; display: grid; gap: 12px;">
+          <div style="font-size: 13.5px; font-weight: 600;">Add channel</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Type<select value="{{ cf.type }}" onChange="{{ cfType }}" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px;"><option value="email">Email</option><option value="slack">Slack webhook</option><option value="whatsapp">WhatsApp</option></select></label>
+            <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Applies to<select value="{{ cf.project_id }}" onChange="{{ cfProject }}" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px;"><option value="">All projects</option><sc-for list="{{ projectOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.id }}">{{ o.name }}</option></sc-for></select></label>
+          </div>
+          <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Label<input value="{{ cf.label }}" onChange="{{ cfLabel }}" placeholder="Owner's phone" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px; outline: none;"></label>
+          <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">{{ cfTargetLabel }}<input value="{{ cf.target }}" onChange="{{ cfTarget }}" placeholder="{{ cfTargetPlaceholder }}" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px; outline: none; font-family: 'JetBrains Mono', monospace;"></label>
+          <label style="display: grid; gap: 5px; font-size: 12px; color: #8b93a5;">Escalation<select value="{{ cf.escalate_after_min }}" onChange="{{ cfEscalate }}" style="padding: 10px 12px; background: #0f1115; border: 1px solid #2d3340; border-radius: 8px; color: #e8eaf0; font-size: 13.5px;"><option value="0">Alert immediately</option><option value="10">Only if still down after 10 min</option><option value="30">Only if still down after 30 min</option><option value="60">Only if still down after 1 hour</option></select></label>
+          <div style="min-height: 18px; font-size: 12.5px; color: {{ formMsgColor }};">{{ formError }}</div>
+          <div style="display: flex; justify-content: flex-end;"><button onClick="{{ saveChannel }}" style="all: unset; cursor: pointer; padding: 9px 16px; border-radius: 7px; font-size: 13px; background: #4f8cff; color: #0f1115; font-weight: 600;">Add channel</button></div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}"><div style="position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #e8eaf0; color: #0f1115; font-size: 13px; font-weight: 500; padding: 10px 16px; border-radius: 8px; z-index: 30; box-shadow: 0 10px 30px rgba(0,0,0,.4);">{{ toast }}</div></sc-if>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { ready: false, authed: false, demo: false, needsOtp: false, otpEmail: '', otpError: '', otpBusy: false, otpResent: false, loginBusy: false, loginError: '', userEmail: '',
+    projects: [], monitors: [], checks: {}, summary: {}, incidents: [], channels: [], view: 'all', refreshedAt: null, running: false,
+    modal: null, f: null, pf: null, cf: null, formError: '', formOk: false, toast: '' };
+  _mod = null; _user = null;
+  async lib() { if (!this._mod) this._mod = await import('./uptime-client.js'); return this._mod; }
+  async componentDidMount() {
+    const L = await this.lib();
+    if (!L.configured()) { const d = L.demoData(); this.setState({ ready: true, demo: true, authed: true, ...d, refreshedAt: new Date() }); return; }
+    const c = await L.client();
+    const { data } = await c.auth.getSession();
+    if (data && data.session) { this._user = data.session.user; if (this.otpVerified(this._user)) { this.setState({ ready: true, authed: true, userEmail: this._user.email }); await this.load(); } else { this.setState({ ready: true }); await this.beginOtp(c, this._user.email); } }
+    else this.setState({ ready: true, authed: false });
+    this._timer = setInterval(() => { if (this.state.authed && !this.state.modal) this.load(); }, 60000);
+  }
+  componentWillUnmount() { clearInterval(this._timer); }
+  otpKeyFor(u) { return 'uptime-otp-' + (u && u.id); }
+  otpVerified(u) { try { return Number(localStorage.getItem(this.otpKeyFor(u)) || 0) > Date.now(); } catch (e) { return false; } }
+  async beginOtp(c, email, resend) {
+    this.setState({ needsOtp: true, otpEmail: email, otpError: '', otpBusy: false, authed: false });
+    const { error } = await c.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
+    if (error) this.setState({ otpError: /rate limit/i.test(error.message) ? 'Too many codes sent — wait a few minutes.' : error.message });
+    else if (resend) this.setState({ otpResent: true });
+    setTimeout(() => { const el = document.getElementById('up-otp'); if (el) el.focus(); }, 50);
+  }
+  async verifyOtp() {
+    const code = ((document.getElementById('up-otp') || {}).value || '').replace(/\D/g, '');
+    if (code.length < 6) { this.setState({ otpError: 'Enter the 6-digit code from the email.' }); return; }
+    const L = await this.lib(); const c = await L.client();
+    this.setState({ otpBusy: true, otpError: '' });
+    const { data, error } = await c.auth.verifyOtp({ email: this.state.otpEmail, token: code, type: 'email' });
+    if (error || !data || !data.session) { this.setState({ otpBusy: false, otpError: error && /expired|invalid/i.test(error.message) ? 'That code is invalid or has expired.' : (error ? error.message : 'Could not verify') }); return; }
+    this._user = data.session.user;
+    try { localStorage.setItem(this.otpKeyFor(this._user), String(Date.now() + 86400000)); } catch (e) {}
+    this.setState({ needsOtp: false, otpBusy: false, authed: true, userEmail: this._user.email });
+    await this.load();
+  }
+  async login() {
+    const email = (document.getElementById('up-email') || {}).value || '', pass = (document.getElementById('up-pass') || {}).value || '';
+    if (!email || !pass) { this.setState({ loginError: 'Enter your email and password.' }); return; }
+    const L = await this.lib(); const c = await L.client();
+    this.setState({ loginBusy: true, loginError: '' });
+    const { data, error } = await c.auth.signInWithPassword({ email, password: pass });
+    if (error) { this.setState({ loginBusy: false, loginError: error.message }); return; }
+    this._user = data.user; this.setState({ loginBusy: false });
+    if (!this.otpVerified(this._user)) { await this.beginOtp(c, email); return; }
+    this.setState({ authed: true, userEmail: email }); await this.load();
+  }
+  async load() {
+    const L = await this.lib(); const c = await L.client(); if (!c) return;
+    const [p, m, inc, ch, sum, rc] = await Promise.all([
+      c.from('projects').select('*').order('sort').order('name'),
+      c.from('monitors').select('*').order('name'),
+      c.from('incidents').select('*').gte('started_at', new Date(Date.now() - 30 * 86400000).toISOString()).order('started_at', { ascending: false }).limit(50),
+      c.from('alert_channels').select('*').order('created_at'),
+      c.rpc('uptime_summary', { p_days: 30 }), c.rpc('recent_checks', { p_limit: 48 })]);
+    const summary = {}; (sum.data || []).forEach((r) => { summary[r.monitor_id] = r; });
+    const checks = {}; (rc.data || []).forEach((r) => { (checks[r.monitor_id] = checks[r.monitor_id] || []).push(r); });
+    this.setState({ projects: p.data || [], monitors: m.data || [], incidents: inc.data || [], channels: ch.data || [], summary, checks, refreshedAt: new Date() });
+  }
+  flash(t) { this.setState({ toast: t }); clearTimeout(this._toast); this._toast = setTimeout(() => this.setState({ toast: '' }), 2600); }
+  async save(table, row, id) {
+    const L = await this.lib(); const c = await L.client();
+    if (!c) { this.flash('Demo mode — connect Supabase to save.'); return { demo: true }; }
+    const q = id ? c.from(table).update(row).eq('id', id) : c.from(table).insert(row);
+    const { error } = await q; if (error) throw error; return { ok: true };
+  }
+  async remove(table, id) {
+    const L = await this.lib(); const c = await L.client();
+    if (!c) { this.flash('Demo mode — connect Supabase to save.'); return; }
+    const { error } = await c.from(table).delete().eq('id', id); if (error) throw error;
+  }
+  ago(iso) { if (!iso) return '—'; const s = Math.round((Date.now() - Date.parse(iso)) / 1000); if (s < 60) return s + 's ago'; const m = Math.round(s / 60); if (m < 60) return m + 'm ago'; const h = Math.round(m / 60); if (h < 48) return h + 'h ago'; return Math.round(h / 24) + 'd ago'; }
+  dur(ms) { const m = Math.round(ms / 60000); if (m < 1) return '<1 min'; if (m < 60) return m + ' min'; const h = Math.floor(m / 60); return h + ' h ' + (m % 60) + ' min'; }
+  renderVals() {
+    const st = this.state; const L = this._mod;
+    const C = { up: '#3ddc97', down: '#ff5c5c', pending: '#8b93a5', paused: '#5d6575' };
+    const sel = (patch) => this.setState({ f: { ...st.f, ...patch } });
+    const pset = (patch) => this.setState({ pf: { ...st.pf, ...patch } });
+    const cset = (patch) => this.setState({ cf: { ...st.cf, ...patch } });
+    const projById = {}; st.projects.forEach((p) => { projById[p.id] = p; });
+    const monById = {}; st.monitors.forEach((m) => { monById[m.id] = m; });
+    const visibleProjects = st.view === 'all' ? st.projects : st.projects.filter((p) => p.id === st.view);
+    const visibleMonitors = st.monitors.filter((m) => st.view === 'all' || m.project_id === st.view);
+    const enabledVisible = visibleMonitors.filter((m) => m.enabled);
+    const downCount = enabledVisible.filter((m) => m.status === 'down').length;
+    const upCount = enabledVisible.filter((m) => m.status === 'up').length;
+    const ups = enabledVisible.map((m) => st.summary[m.id]).filter((s) => s && s.uptime != null);
+    const lats = enabledVisible.map((m) => m.last_latency_ms).filter((v) => v != null);
+    const statusBase = location.href.replace(/[^/]*$/, '') + 'Status.dc.html?p=';
+    const groups = visibleProjects.map((p) => {
+      const ms = st.monitors.filter((m) => m.project_id === p.id);
+      const anyDown = ms.some((m) => m.enabled && m.status === 'down');
+      const dot = anyDown ? C.down : (ms.some((m) => m.status === 'up') ? C.up : C.pending);
+      return { name: p.name, website: p.website || '', host: (p.website || '').replace(/^https?:\/\//, '').replace(/\/$/, ''), dot, halo: dot + '22', statusHref: statusBase + p.slug,
+        edit: () => this.setState({ modal: 'project', formError: '', pf: { id: p.id, name: p.name, website: p.website || '', slug: p.slug, publicStr: String(!!p.public_status) } }),
+        monitors: ms.map((m) => {
+          const s = st.summary[m.id] || {}; const list = st.checks[m.id] || [];
+          const max = Math.max(1, ...list.map((c) => c.latency_ms || 0));
+          const spark = Array.from({ length: 48 }, (_, i) => { const c = list[list.length - 48 + i]; if (!c) return { h: 8, c: '#20252e', title: '' }; return { h: c.ok ? Math.max(14, Math.round(100 * (c.latency_ms || 0) / max)) : 100, c: c.ok ? '#3ddc97' : '#ff5c5c', title: c.ok ? (c.latency_ms + ' ms') : 'failed' }; });
+          const stKey = m.enabled ? m.status : 'paused';
+          const col = C[stKey] || C.pending;
+          return { name: m.name, kindLabel: m.kind === 'heartbeat' ? 'heartbeat' : 'http', target: m.kind === 'heartbeat' ? 'Expects a ping every ' + m.interval_min + ' min' : (m.url || ''),
+            statusLabel: stKey, pillColor: col, pillBg: col + '1f', border: stKey === 'down' ? '#5a2323' : '#262b36', pulse: stKey === 'down' ? 'pulse 1.2s ease-in-out infinite' : 'none',
+            spark, latency: m.last_latency_ms != null ? m.last_latency_ms + ' ms' : '—', uptime: s.uptime != null ? Number(s.uptime).toFixed(2) + '%' : '—', uptimeColor: s.uptime == null ? '#e8eaf0' : (s.uptime >= 99.9 ? '#3ddc97' : (s.uptime >= 99 ? '#ffb648' : '#ff5c5c')),
+            checked: this.ago(m.last_checked_at), hasError: stKey === 'down' && !!m.last_error, error: m.last_error || '',
+            edit: () => this.setState({ modal: 'monitor', formError: '', f: { ...m, headersText: m.headers && Object.keys(m.headers).length ? JSON.stringify(m.headers) : '', enabledStr: String(!!m.enabled), keyword: m.keyword || '', url: m.url || '', grace_min: m.grace_min || 10 } }) };
+        }) };
+    }).filter((g) => g.monitors.length || st.view !== 'all');
+    const incidentRows = st.incidents.filter((i) => { const m = monById[i.monitor_id]; return m && (st.view === 'all' || m.project_id === st.view); }).map((i) => {
+      const m = monById[i.monitor_id] || {}; const p = projById[m.project_id] || {}; const open = !i.resolved_at;
+      return { title: p.name + ' · ' + m.name, cause: i.cause || 'Unknown cause', state: open ? 'ongoing' : 'resolved', color: open ? C.down : C.up, border: open ? '#5a2323' : '#262b36', bg: open ? '#1f1313' : '#0f1115', when: this.ago(i.started_at), duration: this.dur((open ? Date.now() : Date.parse(i.resolved_at)) - Date.parse(i.started_at)) };
+    });
+    const f = st.f || {}; const pf = st.pf || {}; const cf = st.cf || {};
+    const tabStyle = (active) => ({ bg: active ? '#1f2633' : 'transparent', color: active ? '#fff' : '#8b93a5' });
+    return {
+      showLogin: st.ready && !st.authed, showApp: st.ready && st.authed, demo: st.demo, needsOtp: st.needsOtp, notOtp: !st.needsOtp, otpEmail: st.otpEmail, otpError: st.otpError, otpBtnLabel: st.otpBusy ? 'Verifying…' : 'Verify code', resendLabel: st.otpResent ? 'Code sent again' : 'Send a new code', loginBtnLabel: st.loginBusy ? 'Signing in…' : 'Continue', loginError: st.loginError, userEmail: st.userEmail,
+      otpKey: (e) => { if (e.key === 'Enter') this.verifyOtp(); }, verifyOtp: () => this.verifyOtp(), loginKey: (e) => { if (e.key === 'Enter') this.login(); }, login: () => this.login(),
+      resendOtp: async (e) => { e.preventDefault(); const c = await (await this.lib()).client(); this.setState({ otpResent: false }); await this.beginOtp(c, st.otpEmail, true); },
+      cancelOtp: async (e) => { e.preventDefault(); const c = await (await this.lib()).client(); try { await c.auth.signOut(); } catch (x) {} this.setState({ needsOtp: false, authed: false }); },
+      logout: async () => { if (st.demo) { this.flash('Demo mode'); return; } const c = await (await this.lib()).client(); await c.auth.signOut(); this.setState({ authed: false, userEmail: '' }); },
+      viewAll: () => this.setState({ view: 'all' }), allTabBg: tabStyle(st.view === 'all').bg, allTabColor: tabStyle(st.view === 'all').color,
+      projectTabs: st.projects.map((p) => { const ms = st.monitors.filter((m) => m.project_id === p.id && m.enabled); const t = tabStyle(st.view === p.id); return { name: p.name, bg: t.bg, color: t.color, dot: ms.some((m) => m.status === 'down') ? C.down : (ms.length ? C.up : C.pending), select: () => this.setState({ view: p.id }) }; }),
+      refreshedLabel: st.refreshedAt ? 'updated ' + this.ago(st.refreshedAt.toISOString()) : '', runLabel: st.running ? 'Checking…' : 'Run checks now', spinAnim: st.running ? 'spin .8s linear infinite' : 'none',
+      runNow: async () => { if (st.demo) { this.flash('Demo mode — checks run from the server once connected.'); return; } this.setState({ running: true }); try { const r = await (await this.lib()).callFunction({ force: true }); this.flash('Checked ' + (r.checked || 0) + ' monitors · ' + (r.down || 0) + ' down'); await this.load(); } catch (e) { this.flash('Could not reach the checker: ' + e.message); } this.setState({ running: false }); },
+      statUp: upCount, statDown: downCount, statDownColor: downCount ? C.down : '#e8eaf0', statUptime: ups.length ? (ups.reduce((a, s) => a + Number(s.uptime), 0) / ups.length).toFixed(2) + '%' : '—', statLatency: lats.length ? Math.round(lats.reduce((a, b) => a + b, 0) / lats.length) + ' ms' : '—',
+      groups, noMonitors: st.ready && groups.every((g) => !g.monitors.length), incidentRows, noIncidents: !incidentRows.length,
+      modalMonitor: st.modal === 'monitor', modalProject: st.modal === 'project', modalChannels: st.modal === 'channels', closeModal: () => this.setState({ modal: null, formError: '' }), stop: (e) => e.stopPropagation(),
+      openMonitorNew: () => this.setState({ modal: 'monitor', formError: '', f: { project_id: st.view !== 'all' ? st.view : (st.projects[0] || {}).id, kind: 'http', name: '', url: '', method: 'GET', expected_status: 200, timeout_ms: 10000, keyword: '', headersText: '', interval_min: 5, fail_threshold: 2, grace_min: 10, enabledStr: 'true' } }),
+      openProjectNew: () => this.setState({ modal: 'project', formError: '', pf: { name: '', website: '', slug: '', publicStr: 'true' } }),
+      openChannels: () => this.setState({ modal: 'channels', formError: '', formOk: false, cf: { type: 'email', project_id: '', label: '', target: '', escalate_after_min: '0' } }),
+      monitorModalTitle: f.id ? 'Edit monitor' : 'New monitor', projectModalTitle: pf.id ? 'Edit project' : 'New project', saveLabel: 'Save', formError: st.formError, formMsgColor: st.formOk ? '#3ddc97' : '#ff5c5c',
+      f, pf, cf, fIsHttp: f.kind !== 'heartbeat', fIsHeartbeat: f.kind === 'heartbeat', fIsEdit: !!f.id, fIsNew: !f.id, pfIsEdit: !!pf.id, pfIsNew: !pf.id,
+      heartbeatUrl: f.heartbeat_token ? ((L && L.FUNCTION_URL) || 'https://<project>.supabase.co/functions/v1/run-checks') + '?hb=' + f.heartbeat_token : 'Save once to generate the ping URL.',
+      projectOptions: st.projects.map((p) => ({ id: p.id, name: p.name })),
+      fProject: (e) => sel({ project_id: e.target.value }), fKind: (e) => sel({ kind: e.target.value }), fName: (e) => sel({ name: e.target.value }), fUrl: (e) => sel({ url: e.target.value }), fStatus: (e) => sel({ expected_status: Number(e.target.value) }), fTimeout: (e) => sel({ timeout_ms: Number(e.target.value) }), fMethod: (e) => sel({ method: e.target.value }), fKeyword: (e) => sel({ keyword: e.target.value }), fHeaders: (e) => sel({ headersText: e.target.value }), fGrace: (e) => sel({ grace_min: Number(e.target.value) }), fInterval: (e) => sel({ interval_min: Number(e.target.value) }), fThreshold: (e) => sel({ fail_threshold: Number(e.target.value) }), fEnabled: (e) => sel({ enabledStr: e.target.value }),
+      saveMonitor: async () => {
+        if (!f.name) { this.setState({ formError: 'Give the monitor a name.' }); return; }
+        if (f.kind !== 'heartbeat' && !/^https?:\/\//.test(f.url || '')) { this.setState({ formError: 'URL must start with http:// or https://' }); return; }
+        let headers = {}; try { headers = f.headersText ? JSON.parse(f.headersText) : {}; } catch (e) { this.setState({ formError: 'Headers must be valid JSON.' }); return; }
+        const row = { project_id: f.project_id, kind: f.kind, name: f.name, url: f.kind === 'heartbeat' ? null : f.url, method: f.method || 'GET', expected_status: f.expected_status || 200, timeout_ms: f.timeout_ms || 10000, keyword: f.keyword || null, headers, interval_min: f.interval_min || 5, fail_threshold: f.fail_threshold || 2, grace_min: f.grace_min || 10, enabled: f.enabledStr !== 'false' };
+        if (f.id && f.enabledStr === 'false') row.status = 'paused'; else if (f.id && f.enabledStr !== 'false' && f.status === 'paused') row.status = 'pending';
+        try { await this.save('monitors', row, f.id); this.setState({ modal: null }); this.flash(f.id ? 'Monitor updated' : 'Monitor added — first check runs within a minute'); await this.load(); } catch (e) { this.setState({ formError: e.message }); }
+      },
+      deleteMonitor: async () => { if (!confirm('Delete this monitor and its history?')) return; try { await this.remove('monitors', f.id); this.setState({ modal: null }); await this.load(); } catch (e) { this.setState({ formError: e.message }); } },
+      pfName: (e) => pset({ name: e.target.value, slug: pf.id ? pf.slug : e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') }), pfWebsite: (e) => pset({ website: e.target.value }), pfSlug: (e) => pset({ slug: e.target.value }), pfPublic: (e) => pset({ publicStr: e.target.value }),
+      saveProject: async () => {
+        if (!pf.name || !pf.slug) { this.setState({ formError: 'Name and slug are required.' }); return; }
+        try { await this.save('projects', { name: pf.name, slug: pf.slug, website: pf.website || null, public_status: pf.publicStr !== 'false' }, pf.id); this.setState({ modal: null }); this.flash(pf.id ? 'Project updated' : 'Project added'); await this.load(); } catch (e) { this.setState({ formError: e.message }); }
+      },
+      deleteProject: async () => { if (!confirm('Delete this project and all its monitors?')) return; try { await this.remove('projects', pf.id); this.setState({ modal: null, view: 'all' }); await this.load(); } catch (e) { this.setState({ formError: e.message }); } },
+      channelRows: st.channels.map((c) => ({ type: c.type, label: c.label || c.type, target: c.target, scope: (c.project_id ? (projById[c.project_id] || {}).name || 'One project' : 'All projects') + (c.escalate_after_min ? ' · escalation after ' + c.escalate_after_min + ' min' : ' · immediate'),
+        test: async () => { if (st.demo) { this.flash('Demo mode'); return; } const r = await (await this.lib()).callFunction({ action: 'test_channel', channel_id: c.id }); this.flash(r.ok ? 'Test alert sent' : 'Failed: ' + (r.error || 'unknown')); },
+        remove: async () => { if (!confirm('Remove this channel?')) return; await this.remove('alert_channels', c.id); await this.load(); } })),
+      cfType: (e) => cset({ type: e.target.value }), cfProject: (e) => cset({ project_id: e.target.value }), cfLabel: (e) => cset({ label: e.target.value }), cfTarget: (e) => cset({ target: e.target.value }), cfEscalate: (e) => cset({ escalate_after_min: e.target.value }),
+      cfTargetLabel: cf.type === 'slack' ? 'Webhook URL' : (cf.type === 'whatsapp' ? 'Phone (with country code)' : 'Email address(es)'), cfTargetPlaceholder: cf.type === 'slack' ? 'https://hooks.slack.com/services/…' : (cf.type === 'whatsapp' ? '+1 905 555 0100' : 'ops@kansaltech.ca, you@…'),
+      saveChannel: async () => {
+        if (!cf.target) { this.setState({ formError: 'Enter a destination.', formOk: false }); return; }
+        try { await this.save('alert_channels', { type: cf.type, project_id: cf.project_id || null, label: cf.label || null, target: cf.target, escalate_after_min: Number(cf.escalate_after_min) || 0 }); this.setState({ formError: 'Channel added.', formOk: true, cf: { ...cf, label: '', target: '' } }); await this.load(); } catch (e) { this.setState({ formError: e.message, formOk: false }); }
+      },
+      toast: st.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <title>Status</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; background: #f4f5f7; color: #1c2026; font-family: 'Space Grotesk', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #2f6fe4; text-decoration: none; } a:hover { text-decoration: underline; }
+  </style>
+</helmet>
+<div style="max-width: 760px; margin: 0 auto; padding: 48px 20px 60px; display: flex; flex-direction: column; gap: 22px;">
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+    <div><div style="font-size: 12px; color: #6a7384; letter-spacing: .14em; text-transform: uppercase;">Service status</div><h1 style="margin: 4px 0 0; font-size: 28px; font-weight: 600;">{{ projectName }}</h1></div>
+    <a href="{{ website }}" target="_blank" style="font-size: 13px; font-family: 'JetBrains Mono', monospace;">{{ host }}</a>
+  </div>
+  <div style="background: {{ bannerBg }}; color: #fff; border-radius: 12px; padding: 18px 22px; display: flex; align-items: center; gap: 12px; font-size: 17px; font-weight: 600;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #fff;"></span>{{ bannerText }}</div>
+  <sc-if value="{{ notFound }}" hint-placeholder-val="{{ false }}"><div style="background: #fff; border: 1px solid #e3e6ea; border-radius: 12px; padding: 24px; font-size: 14px; color: #6a7384;">This status page doesn't exist or isn't public.</div></sc-if>
+  <div style="background: #fff; border: 1px solid #e3e6ea; border-radius: 12px; overflow: hidden;">
+    <sc-for list="{{ monitors }}" as="m" hint-placeholder-count="3">
+      <div style="padding: 18px 22px; border-top: 1px solid #eef0f3; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <div style="font-weight: 600; font-size: 15px;">{{ m.name }}</div>
+          <div style="display: flex; align-items: center; gap: 14px; font-size: 12.5px; color: #6a7384; font-family: 'JetBrains Mono', monospace;"><span>{{ m.uptime }}</span><span style="color: {{ m.color }}; font-weight: 600; font-family: 'Space Grotesk', sans-serif;">{{ m.label }}</span></div>
+        </div>
+        <div style="display: flex; gap: 2px; height: 30px;">
+          <sc-for list="{{ m.bars }}" as="b" hint-placeholder-count="90"><span title="{{ b.title }}" style="flex: 1; border-radius: 2px; background: {{ b.c }};"></span></sc-for>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: #9aa3b2;"><span>90 days ago</span><span>Today</span></div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="background: #fff; border: 1px solid #e3e6ea; border-radius: 12px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="font-weight: 600; font-size: 15px;">Past incidents</div>
+    <sc-if value="{{ noIncidents }}" hint-placeholder-val="{{ true }}"><div style="font-size: 13.5px; color: #6a7384;">No incidents in the last 30 days.</div></sc-if>
+    <sc-for list="{{ incidents }}" as="i" hint-placeholder-count="0">
+      <div style="border-top: 1px solid #eef0f3; padding-top: 10px; display: flex; flex-direction: column; gap: 3px; font-size: 13.5px;"><div style="display: flex; justify-content: space-between; gap: 10px;"><span style="font-weight: 600;">{{ i.monitor }}</span><span style="color: {{ i.color }}; font-size: 12px; font-weight: 600;">{{ i.state }}</span></div><div style="color: #6a7384;">{{ i.cause }}</div><div style="color: #9aa3b2; font-size: 12px; font-family: 'JetBrains Mono', monospace;">{{ i.when }} · {{ i.duration }}</div></div>
+    </sc-for>
+  </div>
+  <div style="font-size: 12px; color: #9aa3b2; text-align: center;">Monitored by Kansal Tech · updated {{ updated }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { data: null, notFound: false, loading: true };
+  async componentDidMount() {
+    const slug = new URLSearchParams(location.search).get('p') || '';
+    const L = await import('./uptime-client.js');
+    if (!L.configured()) { const d = L.demoData(); const p = d.projects.find((x) => x.slug === slug) || d.projects[1]; this.setState({ loading: false, data: this.demoPayload(d, p) }); return; }
+    const c = await L.client(); const { data } = await c.rpc('public_status', { p_slug: slug });
+    this.setState({ loading: false, data, notFound: !data });
+    this._t = setInterval(async () => { const r = await c.rpc('public_status', { p_slug: slug }); if (r.data) this.setState({ data: r.data }); }, 60000);
+  }
+  componentWillUnmount() { clearInterval(this._t); }
+  demoPayload(d, p) {
+    const days = (bad) => Array.from({ length: 90 }, (_, i) => ({ d: new Date(Date.now() - (89 - i) * 86400000).toISOString().slice(0, 10), u: bad && i === 86 ? 97.2 : (i % 23 === 5 ? 99.65 : 100) }));
+    return { project: { name: p.name, slug: p.slug, website: p.website }, generated_at: new Date().toISOString(),
+      monitors: d.monitors.filter((m) => m.project_id === p.id).map((m) => ({ name: m.name, status: m.status, uptime30: d.summary[m.id].uptime, days: days(m.status === 'down') })),
+      incidents: d.incidents.filter((i) => (d.monitors.find((m) => m.id === i.monitor_id) || {}).project_id === p.id).map((i) => ({ monitor: (d.monitors.find((m) => m.id === i.monitor_id) || {}).name, started_at: i.started_at, resolved_at: i.resolved_at, cause: i.cause })) };
+  }
+  ago(iso) { const m = Math.round((Date.now() - Date.parse(iso)) / 60000); if (m < 60) return m + ' min ago'; const h = Math.round(m / 60); if (h < 48) return h + ' h ago'; return Math.round(h / 24) + ' days ago'; }
+  dur(ms) { const m = Math.round(ms / 60000); if (m < 1) return '<1 min'; if (m < 60) return m + ' min'; return Math.floor(m / 60) + ' h ' + (m % 60) + ' min'; }
+  renderVals() {
+    const d = this.state.data || { project: {}, monitors: [], incidents: [] };
+    const anyDown = d.monitors.some((m) => m.status === 'down');
+    const dayMap = (m) => { const map = {}; (m.days || []).forEach((x) => { map[x.d] = Number(x.u); }); return Array.from({ length: 90 }, (_, i) => { const key = new Date(Date.now() - (89 - i) * 86400000).toISOString().slice(0, 10); const u = map[key]; return { c: u == null ? '#e6e9ee' : (u >= 99.9 ? '#2fbf7f' : (u >= 98 ? '#f0b23c' : '#e24c4c')), title: u == null ? key + ': no data' : key + ': ' + u.toFixed(2) + '%' }; }); };
+    return {
+      projectName: d.project.name || (this.state.loading ? '…' : 'Status'), website: d.project.website || '#', host: (d.project.website || '').replace(/^https?:\/\//, '').replace(/\/$/, ''),
+      bannerBg: this.state.notFound ? '#6a7384' : (anyDown ? '#d64545' : '#2fa36f'), bannerText: this.state.notFound ? 'Unknown page' : (anyDown ? 'Some systems are experiencing issues' : 'All systems operational'), notFound: this.state.notFound,
+      monitors: d.monitors.map((m) => ({ name: m.name, label: m.status === 'down' ? 'Down' : (m.status === 'up' ? 'Operational' : 'Pending'), color: m.status === 'down' ? '#d64545' : (m.status === 'up' ? '#2fa36f' : '#6a7384'), uptime: m.uptime30 != null ? Number(m.uptime30).toFixed(2) + '% · 30d' : '', bars: dayMap(m) })),
+      incidents: d.incidents.map((i) => ({ monitor: i.monitor, cause: i.cause || 'Service unavailable', state: i.resolved_at ? 'Resolved' : 'Ongoing', color: i.resolved_at ? '#2fa36f' : '#d64545', when: this.ago(i.started_at), duration: this.dur((i.resolved_at ? Date.parse(i.resolved_at) : Date.now()) - Date.parse(i.started_at)) })),
+      noIncidents: !d.incidents.length, updated: d.generated_at ? this.ago(d.generated_at) : '—'
+    };
+  }
+}
+</script>
+</body>
+</html>

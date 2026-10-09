@@ -1,0 +1,12 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/"
+  to = "/Uptime.dc.html"
+  status = 200
+
+[[redirects]]
+  from = "/status/:slug"
+  to = "/Status.dc.html?p=:slug"
+  status = 200
