@@ -211,12 +211,13 @@ insert into monitors(project_id, name, url, expected_status)
 select id, 'Admin', 'https://prestigeeyewear.ca/admin', 200 from projects where slug='prestige-eyewear'
   and not exists (select 1 from monitors where name='Admin' and project_id=(select id from projects where slug='prestige-eyewear'));
 insert into monitors(project_id, name, url, expected_status, keyword, headers)
-select id, 'Supabase API', 'https://lflthgvccminphwfxnmr.supabase.co/rest/v1/', 200, 'openapi',
+-- NOTE: the /rest/v1/ root (API spec) is service_role-only on newer projects; always point at a table.
+select id, 'Supabase API', 'https://lflthgvccminphwfxnmr.supabase.co/rest/v1/settings?select=*&limit=1', 200, null,
   '{"apikey":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbHRoZ3ZjY21pbnBod2Z4bm1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4NTI1MzEsImV4cCI6MjEwMTQyODUzMX0.7zpoeTVyMl4msdSt60e3p6pWF0WyFcfW-HqY0JSS8DQ"}'::jsonb
 from projects where slug='prestige-eyewear'
   and not exists (select 1 from monitors where name='Supabase API' and project_id=(select id from projects where slug='prestige-eyewear'));
--- Existing installs: make sure the Supabase API check verifies the database answers, not just that the host is up
-update monitors set keyword='openapi' where name='Supabase API' and url like '%/rest/v1/' and (keyword is null or keyword='');
+-- Existing installs: the /rest/v1/ root rejects anon keys ("Only the service_role API key can be used"); drop the keyword, fix the URL by hand
+update monitors set keyword=null where name='Supabase API' and keyword='openapi';
 
 -- Global alert channel (edit the address)
 insert into alert_channels(project_id, type, label, target)

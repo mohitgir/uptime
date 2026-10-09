@@ -19,5 +19,7 @@ Self-hosted uptime monitor for all Kansal Tech client sites. Own Supabase projec
 
 - Monitor modal: headers are key/value rows (`f.headerList` → `headers` jsonb on save); key names matching key/token/secret render as password fields.
 
+- Supabase API checks must target a table (`/rest/v1/<table>?select=*&limit=1` + anon `apikey`); the `/rest/v1/` root is service_role-only → 401. Checker records a 140-char body snippet on non-OK responses.
+
 ## Change log
 - 2026-10-09 v1 built (moved out of the Prestige Eyewear project).

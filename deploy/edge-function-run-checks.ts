@@ -62,7 +62,7 @@ async function checkHttp(m: any) {
     const res = await fetch(m.url, { method: m.method || "GET", headers: { "User-Agent": "KansalTech-Uptime/1.0", ...(m.headers || {}) }, body: m.method && m.method !== "GET" && m.body ? m.body : undefined, signal: ctrl.signal, redirect: "follow" });
     code = res.status;
     ok = code === (m.expected_status || 200);
-    if (!ok) err = `HTTP ${code}`;
+    if (!ok) { let snippet = ""; try { snippet = (await res.text()).replace(/\s+/g, " ").slice(0, 140); } catch (_) { /* ignore */ } err = `HTTP ${code}${snippet ? " — " + snippet : ""}`; }
     if (ok && m.keyword) {
       const text = await res.text();
       if (!text.toLowerCase().includes(String(m.keyword).toLowerCase())) { ok = false; err = `Keyword "${m.keyword}" not found`; }

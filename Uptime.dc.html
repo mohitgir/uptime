@@ -172,7 +172,7 @@
               </div>
             </sc-for>
             <datalist id="up-header-names"><option value="apikey"></option><option value="Authorization"></option><option value="x-api-key"></option><option value="Accept"></option><option value="Content-Type"></option><option value="User-Agent"></option></datalist>
-            <sc-if value="{{ noHeaders }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; color: #5d6575; line-height: 1.5;">For Supabase: header <span style="font-family: 'JetBrains Mono', monospace; color: #8b93a5;">apikey</span> = the project's anon key, and set “Page must contain” to <span style="font-family: 'JetBrains Mono', monospace; color: #8b93a5;">openapi</span>.</div></sc-if>
+            <sc-if value="{{ noHeaders }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; color: #5d6575; line-height: 1.5;">For Supabase: URL <span style="font-family: 'JetBrains Mono', monospace; color: #8b93a5;">…/rest/v1/some_table?select=*&amp;limit=1</span> with header <span style="font-family: 'JetBrains Mono', monospace; color: #8b93a5;">apikey</span> = the project's anon key. (The bare <span style="font-family: 'JetBrains Mono', monospace; color: #8b93a5;">/rest/v1/</span> root only accepts service_role.)</div></sc-if>
           </div>
         </sc-if>
         <sc-if value="{{ fIsHeartbeat }}" hint-placeholder-val="{{ false }}">
