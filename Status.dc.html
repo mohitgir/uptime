@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<base href="/">
 <script src="./support.js"></script>
 </head>
 <body>
@@ -51,7 +52,8 @@
 class Component extends DCLogic {
   state = { data: null, notFound: false, loading: true };
   async componentDidMount() {
-    const slug = new URLSearchParams(location.search).get('p') || '';
+    const pathSlug = (location.pathname.match(/\/status\/([^/?#]+)/) || [])[1] || '';
+    const slug = new URLSearchParams(location.search).get('p') || pathSlug;
     const L = await import('./uptime-client.js');
     if (!L.configured()) { const d = L.demoData(); const p = d.projects.find((x) => x.slug === slug) || d.projects[1]; this.setState({ loading: false, data: this.demoPayload(d, p) }); return; }
     const c = await L.client(); const { data } = await c.rpc('public_status', { p_slug: slug });

@@ -21,5 +21,13 @@ Self-hosted uptime monitor for all Kansal Tech client sites. Own Supabase projec
 
 - Supabase API checks must target a table (`/rest/v1/<table>?select=*&limit=1` + anon `apikey`); the `/rest/v1/` root is service_role-only → 401. Checker records a 140-char body snippet on non-OK responses.
 
+- Reminders: `remindOpenIncidents()` runs each tick; while an incident is open every enabled channel gets a "STILL DOWN" every `settings.remind_every_hours` (default 4; 0 disables). Logged as `alert_log.kind='reminder'`.
+
+- All alert types include the project's public status page link: `statusUrl(p)` = `STATUS_URL` secret (optional) or DASHBOARD_URL origin + `/status/<slug>` (Netlify redirect → Status.dc.html?p=slug). Email: primary button; Slack: link; WhatsApp: template {{3}}.
+
+- Dashboard sidebar "Alerts sent" panel: last 7 days of `alert_log` (kind × channel, ok/failed with error text), filtered by the selected project tab.
+
+- Both pages carry `<base href="/">` so relative scripts resolve under pretty URLs (`/status/<slug>`); Status reads the slug from `?p=` or the path.
+
 ## Change log
 - 2026-10-09 v1 built (moved out of the Prestige Eyewear project).

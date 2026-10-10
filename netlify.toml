@@ -15,3 +15,8 @@
   from = "/status/:slug"
   to = "/Status.dc.html?p=:slug"
   status = 200
+
+[[redirects]]
+  from = "/status"
+  to = "/Status.dc.html"
+  status = 200

@@ -80,7 +80,7 @@ create table if not exists alert_log (
   id bigserial primary key,
   incident_id uuid references incidents(id) on delete cascade,
   channel_id uuid references alert_channels(id) on delete set null,
-  kind text not null check (kind in ('down','up','test')),
+  kind text not null check (kind in ('down','up','test','reminder')),
   sent_at timestamptz not null default now(),
   ok boolean not null,
   error text
@@ -91,6 +91,10 @@ create table if not exists settings (
   value text
 );
 insert into settings(key,value) values ('retention_days','90') on conflict do nothing;
+insert into settings(key,value) values ('remind_every_hours','4') on conflict do nothing; -- re-alert all channels every N hours while down (0 = off)
+-- Existing installs: allow the new 'reminder' kind
+alter table alert_log drop constraint if exists alert_log_kind_check;
+alter table alert_log add constraint alert_log_kind_check check (kind in ('down','up','test','reminder'));
 
 -- ---------- RLS ----------
 alter table projects enable row level security;

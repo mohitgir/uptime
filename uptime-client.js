@@ -49,5 +49,16 @@ export function demoData() {
     { id: 'c2', project_id: null, type: 'slack', label: '#alerts', target: 'https://hooks.slack.com/services/…', escalate_after_min: 0, enabled: true },
     { id: 'c3', project_id: 'p1', type: 'whatsapp', label: 'Prestige owner', target: '+1 905 555 0100', escalate_after_min: 10, enabled: true }
   ];
-  return { projects, monitors, checks, summary, incidents, channels };
+  const t = (min) => new Date(Date.now() - min * 60000).toISOString();
+  const alertLog = [
+    { id: 1, incident_id: 'i1', channel_id: 'c1', kind: 'reminder', ok: true, error: null, sent_at: t(12) },
+    { id: 2, incident_id: 'i1', channel_id: 'c2', kind: 'reminder', ok: true, error: null, sent_at: t(12) },
+    { id: 3, incident_id: 'i1', channel_id: 'c3', kind: 'down', ok: false, error: 'WhatsApp 400: template not approved', sent_at: t(245) },
+    { id: 4, incident_id: 'i1', channel_id: 'c1', kind: 'down', ok: true, error: null, sent_at: t(252) },
+    { id: 5, incident_id: 'i1', channel_id: 'c2', kind: 'down', ok: true, error: null, sent_at: t(252) },
+    { id: 6, incident_id: null, channel_id: 'c2', kind: 'test', ok: true, error: null, sent_at: t(1500) },
+    { id: 7, incident_id: 'i2', channel_id: 'c1', kind: 'up', ok: true, error: null, sent_at: t(2 * 1440 + 18) },
+    { id: 8, incident_id: 'i2', channel_id: 'c1', kind: 'down', ok: true, error: null, sent_at: t(2 * 1440 + 40) }
+  ];
+  return { projects, monitors, checks, summary, incidents, channels, alertLog };
 }

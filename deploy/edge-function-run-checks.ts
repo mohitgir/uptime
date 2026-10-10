@@ -50,7 +50,30 @@ async function runDue(force: boolean) {
   const now = Date.now();
   const due = (monitors || []).filter((m) => force || !m.last_checked_at || now - Date.parse(m.last_checked_at) >= (m.interval_min * 60 - 20) * 1000);
   const results = await Promise.all(due.map((m) => m.kind === "heartbeat" ? checkHeartbeat(m) : checkHttp(m)));
+  await remindOpenIncidents();
   return { checked: results.length, down: results.filter((r) => !r.ok).length, results };
+}
+
+// Reminders: while an incident stays open, re-alert EVERY channel every N hours (settings.remind_every_hours, default 4, 0 = off)
+async function remindOpenIncidents() {
+  const { data: s } = await sb.from("settings").select("value").eq("key", "remind_every_hours").maybeSingle();
+  const hours = s ? Number(s.value) : 4;
+  if (!hours || hours <= 0) return;
+  const every = hours * 3600000;
+  const { data: open } = await sb.from("incidents").select("*, monitors(*, projects(*))").is("resolved_at", null);
+  if (!open || !open.length) return;
+  const { data: channels } = await sb.from("alert_channels").select("*").eq("enabled", true);
+  for (const inc of open) for (const ch of channels || []) {
+    const m = inc.monitors, p = m.projects;
+    if (ch.project_id && ch.project_id !== m.project_id) continue;
+    if (ch.escalate_after_min > 0 && Date.now() - Date.parse(inc.started_at) < ch.escalate_after_min * 60000) continue;
+    const { data: last } = await sb.from("alert_log").select("sent_at").eq("incident_id", inc.id).eq("channel_id", ch.id).eq("ok", true).order("sent_at", { ascending: false }).limit(1);
+    const lastAt = last && last.length ? Date.parse(last[0].sent_at) : Date.parse(inc.started_at);
+    if (Date.now() - lastAt < every) continue;
+    const duration = fmtDur(Date.now() - Date.parse(inc.started_at));
+    const r = await send(ch, { title: `🔴 STILL DOWN (${duration}): ${p.name} — ${m.name}`, lines: [`${m.name} has been down for ${duration}.`, `Cause: ${m.last_error || inc.cause || "unknown"}`, m.url ? `URL: ${m.url}` : "", `Next reminder in ${hours} h unless it recovers.`], up: false, project: p.name, monitor: m.name, cause: inc.cause || "", duration, statusUrl: statusUrl(p) });
+    await sb.from("alert_log").insert({ incident_id: inc.id, channel_id: ch.id, kind: "reminder", ok: r.ok, error: r.error || null });
+  }
 }
 
 async function checkHttp(m: any) {
@@ -109,7 +132,7 @@ async function transition(monitorId: string, up: boolean, cause: string | null, 
   const msg = {
     title: up ? `✅ RECOVERED: ${project.name} — ${m.name}` : `🔴 DOWN: ${project.name} — ${m.name}`,
     lines: up ? [`${m.name} is back up.`, `Downtime: ${duration}`, m.url ? `URL: ${m.url}` : ""] : [`${m.name} is not responding.`, `Cause: ${cause || "unknown"}`, m.url ? `URL: ${m.url}` : "", `Checked ${m.fail_threshold || 2}× in a row.`],
-    up, project: project.name, monitor: m.name, cause: cause || "", duration,
+    up, project: project.name, monitor: m.name, cause: cause || "", duration, statusUrl: statusUrl(project),
   };
   for (const ch of channels || []) {
     if (!up && ch.escalate_after_min > 0) continue; // escalation channels handled by escalateLater on later ticks
@@ -129,7 +152,7 @@ async function escalateLater() {
     const { data: already } = await sb.from("alert_log").select("id").eq("incident_id", inc.id).eq("channel_id", ch.id).limit(1);
     if (already && already.length) continue;
     const m = inc.monitors, p = m.projects;
-    const r = await send(ch, { title: `🔴 STILL DOWN (${ch.escalate_after_min} min): ${p.name} — ${m.name}`, lines: [`Cause: ${inc.cause || "unknown"}`, m.url ? `URL: ${m.url}` : ""], up: false, project: p.name, monitor: m.name, cause: inc.cause || "", duration: fmtDur(Date.now() - Date.parse(inc.started_at)) });
+    const r = await send(ch, { title: `🔴 STILL DOWN (${ch.escalate_after_min} min): ${p.name} — ${m.name}`, lines: [`Cause: ${inc.cause || "unknown"}`, m.url ? `URL: ${m.url}` : ""], up: false, project: p.name, monitor: m.name, cause: inc.cause || "", duration: fmtDur(Date.now() - Date.parse(inc.started_at)), statusUrl: statusUrl(p) });
     await sb.from("alert_log").insert({ incident_id: inc.id, channel_id: ch.id, kind: "down", ok: r.ok, error: r.error || null });
   }
 }
@@ -142,19 +165,28 @@ async function testChannel(id: string) {
   return r;
 }
 
-type Msg = { title: string; lines: string[]; up: boolean; project: string; monitor: string; cause: string; duration: string };
+type Msg = { title: string; lines: string[]; up: boolean; project: string; monitor: string; cause: string; duration: string; statusUrl?: string };
+// Public status page for a project: <STATUS_URL or DASHBOARD_URL origin>/status/<slug>
+const DEFAULT_DASHBOARD = "https://uptime.kansaltech.ca";
+function dashboardUrl() { return env("DASHBOARD_URL", "") || DEFAULT_DASHBOARD; }
+function statusUrl(p: any) {
+  if (!p?.slug) return "";
+  let base = env("STATUS_URL", "");
+  if (!base) { try { base = new URL(dashboardUrl()).origin; } catch { base = DEFAULT_DASHBOARD; } }
+  return `${base.replace(/\/$/, "")}/status/${p.slug}`;
+}
 async function send(ch: any, msg: Msg): Promise<{ ok: boolean; error?: string }> {
   const plain = msg.title.replace(/[✅🔴🔔]\s*/g, "");
   try {
     if (ch.type === "slack") {
-      const r = await fetch(ch.target, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: `*${msg.title}*\n${msg.lines.filter(Boolean).join("\n")}\n<${env("DASHBOARD_URL")}|Open dashboard>` }) });
+      const r = await fetch(ch.target, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: `*${msg.title}*\n${msg.lines.filter(Boolean).join("\n")}\n${msg.statusUrl ? `<${msg.statusUrl}|Status page> · ` : ""}<${dashboardUrl()}|Open dashboard>` }) });
       return r.ok ? { ok: true } : { ok: false, error: `Slack ${r.status}` };
     }
     if (ch.type === "whatsapp") {
-      // Meta WhatsApp Cloud API with an approved template (default name uptime_alert): {{1}} title, {{2}} details, {{3}} dashboard URL
+      // Meta WhatsApp Cloud API with an approved template (default name uptime_alert): {{1}} title, {{2}} details, {{3}} status page URL (dashboard URL for tests)
       const r = await fetch(`https://graph.facebook.com/v20.0/${env("WHATSAPP_PHONE_ID")}/messages`, { method: "POST", headers: { Authorization: `Bearer ${env("WHATSAPP_TOKEN")}`, "Content-Type": "application/json" },
         body: JSON.stringify({ messaging_product: "whatsapp", to: ch.target.replace(/\D/g, ""), type: "template", template: { name: env("WHATSAPP_TEMPLATE", "uptime_alert"), language: { code: "en" }, components: [{ type: "body", parameters: [
-          { type: "text", text: plain }, { type: "text", text: msg.lines.filter(Boolean).join(" · ") }, { type: "text", text: env("DASHBOARD_URL") }] }] } }) });
+          { type: "text", text: plain }, { type: "text", text: msg.lines.filter(Boolean).join(" · ") }, { type: "text", text: msg.statusUrl || dashboardUrl() }] }] } }) });
       if (r.ok) return { ok: true };
       return { ok: false, error: `WhatsApp ${r.status}: ${(await r.text()).slice(0, 200)}` };
     }
@@ -170,7 +202,10 @@ async function send(ch: any, msg: Msg): Promise<{ ok: boolean; error?: string }>
         <tr><td style="padding:26px 32px 0;"><span style="display:inline-block;background:${tint};color:${color};font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;border-radius:999px;">&#9679;&nbsp; ${state}</span></td></tr>
         <tr><td style="padding:14px 32px 0;font-size:22px;font-weight:600;line-height:1.3;">${plain}</td></tr>
         <tr><td style="padding:18px 32px 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table></td></tr>
-        <tr><td style="padding:24px 32px 0;"><a href="${env("DASHBOARD_URL")}" style="display:inline-block;background:#4f8cff;color:#0f1115;text-decoration:none;font-weight:600;padding:11px 18px;border-radius:8px;font-size:13.5px;">Open dashboard</a></td></tr>
+        <tr><td style="padding:24px 32px 0;"><table role="presentation" cellpadding="0" cellspacing="0"><tr>
+          ${msg.statusUrl ? `<td style="padding-right:10px;"><a href="${msg.statusUrl}" style="display:inline-block;background:#4f8cff;color:#0f1115;text-decoration:none;font-weight:600;padding:11px 18px;border-radius:8px;font-size:13.5px;">View status page</a></td>` : ""}
+          <td><a href="${dashboardUrl()}" style="display:inline-block;border:1px solid #2d3340;color:#e8eaf0;text-decoration:none;font-weight:600;padding:10px 18px;border-radius:8px;font-size:13.5px;">Open dashboard</a></td></tr></table></td></tr>
+        ${msg.statusUrl ? `<tr><td style="padding:12px 32px 0;font-size:11.5px;color:#5d6575;">Status page: <a href="${msg.statusUrl}" style="color:#7aa7ff;text-decoration:none;">${msg.statusUrl}</a></td></tr>` : ""}
         <tr><td style="padding:28px 32px 24px;font-size:11px;color:#5d6575;line-height:1.6;"><span style="color:#8b93a5;">Kansal Tech Uptime</span> · ${new Date().toUTCString()}<br>${msg.up ? "Recovery notice" : "Alerts repeat only after the monitor recovers and fails again."}</td></tr>
       </table></td></tr></table>`;
     const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${env("RESEND_API_KEY")}`, "Content-Type": "application/json" },
